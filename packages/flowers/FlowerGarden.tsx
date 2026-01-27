@@ -35,7 +35,8 @@ export function FlowerGarden({
       position,
       rotation: Math.random() * Math.PI * 2, // Random rotation
       scale: definition.defaultScale,
-      placedAt: new Date()
+      placedAt: new Date(),
+      state: 'BUD' // Start as bud, will bloom on click or immediately
     };
     
     setFlowers(prev => [...prev, newFlower]);
@@ -118,7 +119,8 @@ export function useFlowerGarden(gardenId: string, initialFlowers: PlacedFlower[]
       position,
       rotation: Math.random() * Math.PI * 2,
       scale: definition.defaultScale,
-      placedAt: new Date()
+      placedAt: new Date(),
+      state: 'BUD' // Start as bud, will bloom on click or immediately
     };
     
     setFlowers(prev => [...prev, newFlower]);

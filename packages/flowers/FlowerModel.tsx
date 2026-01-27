@@ -1,8 +1,9 @@
-import { useGLTF } from '@react-three/drei';
-import { useMemo, useState, useRef } from 'react';
-import { ThreeEvent } from '@react-three/fiber';
+import { useGLTF, Html } from '@react-three/drei';
+import { useMemo, useState, useRef, useEffect } from 'react';
+import { useThree, ThreeEvent } from '@react-three/fiber';
 import * as THREE from 'three';
 import { PlacedFlower, FlowerDefinition } from './types';
+import { AnimatedFlowerBloom } from './AnimatedFlowerBloom';
 
 interface FlowerModelProps {
   flower: PlacedFlower;
@@ -29,48 +30,33 @@ export function FlowerModel({
   onDragEnd,
   draggable = true
 }: FlowerModelProps) {
-  const { scene } = useGLTF(definition.modelPath);
   const [hovered, setHovered] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [isBloom, setIsBloom] = useState(flower.state === 'BLOOMED' || flower.state === 'OPEN');
   const meshRef = useRef<THREE.Group>(null);
+  const dragPlaneRef = useRef<THREE.Mesh>(null);
+  const { camera, raycaster, gl } = useThree();
+  const dragOffsetRef = useRef(new THREE.Vector3());
+  const pointerDownTimeRef = useRef(0);
+  const pointerDownPosRef = useRef({ x: 0, y: 0 });
   
-  // Clone and configure the flower model
-  const clonedScene = useMemo(() => {
-    const clone = scene.clone();
-    
-    // Apply any material adjustments
-    clone.traverse((child) => {
-      if (child instanceof THREE.Mesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-        
-        // Enable emissive glow on hover
-        if (child.material instanceof THREE.MeshStandardMaterial) {
-          child.material = child.material.clone();
-          child.material.emissive = new THREE.Color(definition.color);
-          child.material.emissiveIntensity = 0;
-        }
-      }
-    });
-    
-    return clone;
-  }, [scene, definition.color]);
+  // React to flower state changes
+  useEffect(() => {
+    setIsBloom(flower.state === 'BLOOMED' || flower.state === 'OPEN');
+  }, [flower.state]);
   
-  // Update emissive glow based on hover state
-  useMemo(() => {
-    clonedScene.traverse((child) => {
-      if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
-        child.material.emissiveIntensity = hovered || dragging ? 0.4 : 0;
-      }
-    });
-  }, [clonedScene, hovered, dragging]);
+  // Create invisible drag plane at ground level
+  const dragPlane = useMemo(() => {
+    const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
+    return plane;
+  }, []);
   
   const handlePointerOver = (e: ThreeEvent<PointerEvent>) => {
     e.stopPropagation();
     setHovered(true);
     onHover?.(true);
     if (draggable) {
-      document.body.style.cursor = 'pointer';
+      document.body.style.cursor = 'grab';
     }
   };
   
@@ -78,68 +64,113 @@ export function FlowerModel({
     e.stopPropagation();
     setHovered(false);
     onHover?.(false);
-    document.body.style.cursor = 'default';
+    if (!dragging) {
+      document.body.style.cursor = 'default';
+    }
   };
   
   const handleClick = (e: ThreeEvent<MouseEvent>) => {
     e.stopPropagation();
-    if (!dragging) {
+    
+    // Calculate time and distance since pointer down
+    const clickDuration = Date.now() - pointerDownTimeRef.current;
+    const pointerMoveDist = Math.sqrt(
+      Math.pow(e.clientX - pointerDownPosRef.current.x, 2) +
+      Math.pow(e.clientY - pointerDownPosRef.current.y, 2)
+    );
+    
+    // Only trigger click if it was quick and didn't move much (not a drag)
+    if (clickDuration < 300 && pointerMoveDist < 10) {
+      console.log(`🌸 Flower clicked: ${definition.name} (state: ${flower.state})`);
       onClick?.(flower);
+    } else {
+      console.log(`🚫 Click ignored (drag detected): duration=${clickDuration}ms, distance=${pointerMoveDist}px`);
     }
   };
   
   const handlePointerDown = (e: ThreeEvent<PointerEvent>) => {
     if (draggable) {
       e.stopPropagation();
+      
+      // Track pointer down time and position for click detection
+      pointerDownTimeRef.current = Date.now();
+      pointerDownPosRef.current = { x: e.clientX, y: e.clientY };
+      
       setDragging(true);
       onDragStart?.(flower);
-      (e.target as any).setPointerCapture(e.pointerId);
+      document.body.style.cursor = 'grabbing';
+      
+      // Calculate offset from click point to flower center
+      if (meshRef.current) {
+        const flowerPos = meshRef.current.position;
+        dragOffsetRef.current.set(
+          e.point.x - flowerPos.x,
+          0,
+          e.point.z - flowerPos.z
+        );
+      }
     }
   };
   
-  const handlePointerMove = (e: ThreeEvent<PointerEvent>) => {
-    if (dragging && draggable) {
-      e.stopPropagation();
+  // Use global pointer move for smooth dragging
+  useEffect(() => {
+    if (!dragging || !draggable) return;
+    
+    const handleGlobalPointerMove = (event: PointerEvent) => {
+      if (!meshRef.current) return;
       
-      // Calculate new position based on pointer
-      const newPosition = {
-        x: e.point.x,
-        y: 0, // Keep on ground
-        z: e.point.z
-      };
+      // Convert screen coordinates to normalized device coordinates
+      const rect = gl.domElement.getBoundingClientRect();
+      const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+      const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
       
-      // Constrain to garden bounds
-      const maxDistance = 18;
-      const distance = Math.sqrt(newPosition.x ** 2 + newPosition.z ** 2);
-      if (distance > maxDistance) {
-        const scale = maxDistance / distance;
-        newPosition.x *= scale;
-        newPosition.z *= scale;
+      // Raycast to drag plane
+      raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+      const intersectPoint = new THREE.Vector3();
+      raycaster.ray.intersectPlane(dragPlane, intersectPoint);
+      
+      if (intersectPoint) {
+        // Apply offset and constrain to bounds
+        let newX = intersectPoint.x - dragOffsetRef.current.x;
+        let newZ = intersectPoint.z - dragOffsetRef.current.z;
+        
+        // Constrain to garden bounds
+        const maxDistance = 18;
+        const distance = Math.sqrt(newX ** 2 + newZ ** 2);
+        if (distance > maxDistance) {
+          const scale = maxDistance / distance;
+          newX *= scale;
+          newZ *= scale;
+        }
+        
+        const newPosition = { x: newX, y: 0, z: newZ };
+        meshRef.current.position.set(newPosition.x, newPosition.y, newPosition.z);
+        onDrag?.(flower, newPosition);
       }
+    };
+    
+    const handleGlobalPointerUp = () => {
+      setDragging(false);
+      document.body.style.cursor = hovered ? 'grab' : 'default';
       
       if (meshRef.current) {
-        meshRef.current.position.set(newPosition.x, newPosition.y, newPosition.z);
+        const finalPosition = {
+          x: meshRef.current.position.x,
+          y: meshRef.current.position.y,
+          z: meshRef.current.position.z
+        };
+        onDragEnd?.(flower, finalPosition);
       }
-      
-      onDrag?.(flower, newPosition);
-    }
-  };
-  
-  const handlePointerUp = (e: ThreeEvent<PointerEvent>) => {
-    if (dragging && draggable) {
-      e.stopPropagation();
-      setDragging(false);
-      
-      const finalPosition = {
-        x: meshRef.current!.position.x,
-        y: meshRef.current!.position.y,
-        z: meshRef.current!.position.z
-      };
-      
-      onDragEnd?.(flower, finalPosition);
-      (e.target as any).releasePointerCapture(e.pointerId);
-    }
-  };
+    };
+    
+    window.addEventListener('pointermove', handleGlobalPointerMove);
+    window.addEventListener('pointerup', handleGlobalPointerUp);
+    
+    return () => {
+      window.removeEventListener('pointermove', handleGlobalPointerMove);
+      window.removeEventListener('pointerup', handleGlobalPointerUp);
+    };
+  }, [dragging, draggable, camera, raycaster, gl, dragPlane, flower, onDrag, onDragEnd, hovered]);
   
   return (
     <group
@@ -151,11 +182,114 @@ export function FlowerModel({
       onPointerOut={handlePointerOut}
       onClick={handleClick}
       onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
     >
-      {/* Raise model above ground so it "sticks out" visually */}
-      <primitive object={clonedScene} position={[0, 1, 0]} />
+      {/* Animated bloom transition */}
+      <AnimatedFlowerBloom
+        definition={definition}
+        isBloom={isBloom}
+        scale={1}
+        onBloomComplete={() => {
+          console.log(`${definition.name} bloomed!`);
+        }}
+      />
+      
+      {/* Beautiful hover card - calm & poetic - LARGER */}
+      {hovered && !dragging && (
+        <Html position={[0, 3, 0]} center distanceFactor={8}>
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(25,25,30,0.96), rgba(35,35,45,0.94))',
+            backgroundImage: `
+              linear-gradient(rgba(25,25,30,0.96), rgba(35,35,45,0.94)),
+              linear-gradient(135deg, ${definition.color}60, ${definition.color}20)
+            `,
+            backgroundOrigin: 'border-box',
+            backgroundClip: 'padding-box, border-box',
+            backdropFilter: 'blur(24px)',
+            padding: '24px 28px',
+            borderRadius: '18px',
+            boxShadow: `
+              0 12px 40px rgba(0,0,0,0.5),
+              0 0 0 1px rgba(255,255,255,0.08),
+              0 0 30px ${definition.color}25
+            `,
+            border: '1.5px solid transparent',
+            minWidth: '280px',
+            maxWidth: '320px',
+            pointerEvents: 'none',
+            userSelect: 'none'
+          }}>
+            {/* Flower Name - Calm & Poetic - LARGER */}
+            <div style={{
+              fontSize: '22px',
+              fontWeight: 600,
+              color: '#FFFFFF',
+              marginBottom: '10px',
+              letterSpacing: '0.3px',
+              textShadow: `0 2px 8px ${definition.color}40`
+            }}>
+              {definition.name}
+            </div>
+            
+            {/* Brief Symbolism - Italicized Quote Style - LARGER */}
+            <div style={{
+              fontSize: '15px',
+              color: '#B8B8C0',
+              fontStyle: 'italic',
+              lineHeight: '1.6',
+              marginBottom: '14px',
+              borderLeft: `2px solid ${definition.color}40`,
+              paddingLeft: '14px'
+            }}>
+              "{definition.symbolism}"
+            </div>
+            
+            {/* State Badge - Soft & Meaningful - LARGER */}
+            <div style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '8px 14px',
+              background: flower.state === 'BUD' 
+                ? `${definition.color}15` 
+                : `${definition.color}20`,
+              border: `1px solid ${definition.color}50`,
+              borderRadius: '20px',
+              fontSize: '13px',
+              fontWeight: 500,
+              color: definition.color
+            }}>
+              {flower.state === 'BUD' ? (
+                <>🌱 Waiting to bloom</>
+              ) : (
+                <>🌸 Bloomed</>
+              )}
+            </div>
+            
+            {/* Planted timestamp - Subtle - LARGER */}
+            <div style={{
+              marginTop: '12px',
+              fontSize: '11px',
+              color: '#808090',
+              opacity: 0.7
+            }}>
+              Planted {new Date(flower.placedAt).toLocaleDateString()}
+            </div>
+            
+            {/* Click hint */}
+            <div style={{
+              marginTop: '12px',
+              padding: '8px 12px',
+              background: 'rgba(255,255,255,0.05)',
+              borderRadius: '8px',
+              textAlign: 'center',
+              fontSize: '12px',
+              color: '#A0A0B0'
+            }}>
+              👆 Click to view details
+            </div>
+          </div>
+        </Html>
+      )}
       
       {/* Hover indicator - subtle circle on ground */}
       {hovered && (

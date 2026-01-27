@@ -22,6 +22,7 @@ function App() {
   
   const [selectedFlower, setSelectedFlower] = useState<{ flower: PlacedFlower; definition: FlowerDefinition } | null>(null);
   const [placingFlowerType, setPlacingFlowerType] = useState<number | null>(null);
+  const [isDraggingFlower, setIsDraggingFlower] = useState(false);
 
   return (
     <div style={{ width: '100vw', height: '100vh', margin: 0, padding: 0 }}>
@@ -197,88 +198,298 @@ function App() {
         </div>
       </div>
 
-      {/* Info Panel / Selected Flower */}
-      <div style={{
-        position: 'absolute',
-        bottom: 20,
-        left: 20,
-        zIndex: 100,
-        background: 'rgba(30, 30, 30, 0.85)',
-        padding: '15px',
-        borderRadius: '12px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
-        backdropFilter: 'blur(10px)',
-        maxWidth: '300px'
-      }}>
-        {selectedFlower ? (
-          <>
-            <h3 style={{ 
-              margin: '0 0 8px 0', 
-              fontSize: '16px',
-              color: '#FFFFFF'
+      {/* Garden Info (Bottom Left - Simple) */}
+      {!selectedFlower && (
+        <div style={{
+          position: 'absolute',
+          bottom: 20,
+          left: 20,
+          zIndex: 100,
+          background: 'rgba(30, 30, 30, 0.85)',
+          padding: '15px 20px',
+          borderRadius: '12px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.4)',
+          backdropFilter: 'blur(10px)',
+          maxWidth: '300px'
+        }}>
+          <h3 style={{ 
+            margin: '0 0 8px 0', 
+            fontSize: '16px',
+            color: '#FFFFFF'
+          }}>
+            {currentGarden.displayName}
+          </h3>
+          <p style={{ 
+            margin: '0', 
+            fontSize: '14px', 
+            color: '#E0E0E0', 
+            lineHeight: '1.4' 
+          }}>
+            {currentGarden.description}
+          </p>
+          <p style={{ 
+            margin: '10px 0 0 0', 
+            fontSize: '12px', 
+            color: '#A0A0A0', 
+            lineHeight: '1.4' 
+          }}>
+            {flowers.length} flower{flowers.length !== 1 ? 's' : ''} planted
+          </p>
+        </div>
+      )}
+
+      {/* Detailed Flower Panel - Right Side Slide-in */}
+      {selectedFlower && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          right: 0,
+          width: '420px',
+          height: '100vh',
+          background: 'linear-gradient(to left, rgba(18,18,22,0.98), rgba(25,25,30,0.96))',
+          backdropFilter: 'blur(30px)',
+          boxShadow: '-8px 0 40px rgba(0,0,0,0.6)',
+          zIndex: 200,
+          borderLeft: `3px solid ${selectedFlower.definition.color}`,
+          overflow: 'auto',
+          animation: 'slideInRight 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)'
+        }}>
+          {/* Header Section */}
+          <div style={{
+            padding: '32px 32px 24px',
+            borderBottom: '1px solid rgba(255,255,255,0.08)'
+          }}>
+            {/* Close Button */}
+            <button 
+              onClick={() => setSelectedFlower(null)}
+              style={{
+                position: 'absolute',
+                top: '24px',
+                right: '24px',
+                background: 'rgba(255,255,255,0.08)',
+                border: 'none',
+                borderRadius: '50%',
+                width: '40px',
+                height: '40px',
+                cursor: 'pointer',
+                fontSize: '18px',
+                color: '#FFFFFF',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+              }}
+            >
+              ✕
+            </button>
+            
+            {/* Flower Icon */}
+            <div style={{
+              fontSize: '64px',
+              textAlign: 'center',
+              marginBottom: '16px',
+              filter: `drop-shadow(0 4px 16px ${selectedFlower.definition.color}40)`
+            }}>
+              {selectedFlower.definition.id === 1 ? '🌼' : 
+               selectedFlower.definition.id === 2 ? '🌹' : '🌻'}
+            </div>
+            
+            {/* Flower Name */}
+            <h2 style={{
+              fontSize: '28px',
+              fontWeight: 600,
+              textAlign: 'center',
+              marginBottom: '8px',
+              background: `linear-gradient(135deg, #FFFFFF, ${selectedFlower.definition.color})`,
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              letterSpacing: '0.5px'
             }}>
               {selectedFlower.definition.name}
-            </h3>
-            <p style={{ 
-              margin: '0 0 10px 0', 
-              fontSize: '14px', 
-              color: '#E0E0E0', 
-              lineHeight: '1.4' 
+            </h2>
+            
+            {/* State & Date */}
+            <div style={{
+              textAlign: 'center',
+              fontSize: '13px',
+              color: '#A0A0B0',
+              marginBottom: '4px'
             }}>
-              {selectedFlower.definition.description}
-            </p>
+              {selectedFlower.flower.state === 'BUD' ? (
+                <>🌱 Bud · Waiting to bloom</>
+              ) : (
+                <>🌸 Bloomed</>
+              )}
+            </div>
+            
+            <div style={{
+              textAlign: 'center',
+              fontSize: '11px',
+              color: '#70707D'
+            }}>
+              Planted {new Date(selectedFlower.flower.placedAt).toLocaleDateString()}
+            </div>
+          </div>
+          
+          {/* Content Section */}
+          <div style={{ padding: '32px' }}>
+            {/* Symbolism Card */}
+            <div style={{
+              background: 'rgba(255,255,255,0.03)',
+              border: `1px solid ${selectedFlower.definition.color}30`,
+              borderRadius: '12px',
+              padding: '16px 20px',
+              marginBottom: '24px'
+            }}>
+              <div style={{
+                fontSize: '11px',
+                fontWeight: 600,
+                color: selectedFlower.definition.color,
+                marginBottom: '8px',
+                textTransform: 'uppercase',
+                letterSpacing: '1px'
+              }}>
+                Symbolism
+              </div>
+              <div style={{
+                fontSize: '14px',
+                color: '#D0D0D8',
+                fontStyle: 'italic',
+                lineHeight: '1.6'
+              }}>
+                "{selectedFlower.definition.symbolism}"
+              </div>
+            </div>
+            
+            {/* Description Card */}
+            <div style={{
+              background: 'rgba(255,255,255,0.04)',
+              borderRadius: '12px',
+              padding: '20px',
+              marginBottom: '20px',
+              borderLeft: `3px solid ${selectedFlower.definition.color}`
+            }}>
+              <div style={{
+                fontSize: '11px',
+                color: '#A0A0B0',
+                marginBottom: '10px',
+                fontWeight: 500
+              }}>
+                ABOUT THIS FLOWER
+              </div>
+              <div style={{
+                fontSize: '15px',
+                color: '#E8E8F0',
+                lineHeight: '1.7'
+              }}>
+                {selectedFlower.definition.description}
+              </div>
+            </div>
+            
+            {/* State Message */}
+            {selectedFlower.flower.state === 'BUD' && (
+              <div style={{
+                textAlign: 'center',
+                padding: '32px 20px',
+                color: '#909099'
+              }}>
+                <div style={{ fontSize: '32px', marginBottom: '12px' }}>🌱</div>
+                <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
+                  This flower is waiting to bloom.<br/>
+                  <span style={{ color: selectedFlower.definition.color, fontWeight: 600 }}>
+                    Click the button below to reveal its beauty.
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+          
+          {/* Action Footer */}
+          <div style={{
+            position: 'sticky',
+            bottom: 0,
+            padding: '20px 32px',
+            background: 'rgba(18,18,22,0.95)',
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            backdropFilter: 'blur(20px)'
+          }}>
             <button
               onClick={() => {
                 removeFlower(selectedFlower.flower.id);
                 setSelectedFlower(null);
               }}
               style={{
-                padding: '8px 12px',
-                background: '#DC143C',
-                border: 'none',
-                borderRadius: '6px',
-                color: '#FFFFFF',
+                width: '100%',
+                padding: '12px',
+                background: 'rgba(220, 20, 60, 0.15)',
+                border: '1px solid rgba(220, 20, 60, 0.3)',
+                borderRadius: '10px',
+                color: '#FF6B6B',
                 cursor: 'pointer',
-                fontSize: '12px',
-                fontWeight: 600
+                fontSize: '14px',
+                fontWeight: 600,
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(220, 20, 60, 0.25)';
+                e.currentTarget.style.borderColor = 'rgba(220, 20, 60, 0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(220, 20, 60, 0.15)';
+                e.currentTarget.style.borderColor = 'rgba(220, 20, 60, 0.3)';
               }}
             >
-              🗑️ Remove Flower
+              Remove Flower
             </button>
-          </>
-        ) : (
-          <>
-            <h3 style={{ 
-              margin: '0 0 8px 0', 
-              fontSize: '16px',
-              color: '#FFFFFF'
-            }}>
-              {currentGarden.displayName}
-            </h3>
-            <p style={{ 
-              margin: '0', 
-              fontSize: '14px', 
-              color: '#E0E0E0', 
-              lineHeight: '1.4' 
-            }}>
-              {currentGarden.description}
-            </p>
-            <p style={{ 
-              margin: '10px 0 0 0', 
-              fontSize: '12px', 
-              color: '#A0A0A0', 
-              lineHeight: '1.4' 
-            }}>
-              {flowers.length} flower{flowers.length !== 1 ? 's' : ''} planted
-            </p>
-          </>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
+
+      {/* External Bloom Button - Centered Bottom (only for buds) */}
+      {selectedFlower && selectedFlower.flower.state === 'BUD' && (
+        <button
+          onClick={() => {
+            updateFlower(selectedFlower.flower.id, { state: 'BLOOMED', bloomedAt: new Date() });
+          }}
+          style={{
+            position: 'fixed',
+            bottom: '40px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            padding: '16px 48px',
+            fontSize: '17px',
+            background: 'linear-gradient(135deg, #4CAF50, #45a049)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '32px',
+            cursor: 'pointer',
+            boxShadow: '0 8px 24px rgba(76, 175, 80, 0.35)',
+            fontWeight: 600,
+            zIndex: 150,
+            transition: 'all 0.3s',
+            letterSpacing: '0.3px'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.transform = 'translateX(-50%) translateY(-2px)';
+            e.currentTarget.style.boxShadow = '0 12px 32px rgba(76, 175, 80, 0.45)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.transform = 'translateX(-50%)';
+            e.currentTarget.style.boxShadow = '0 8px 24px rgba(76, 175, 80, 0.35)';
+          }}
+        >
+          🌱 Bloom this Flower
+        </button>
+      )}
 
       {/* 3D Canvas */}
       <Canvas shadows>
         <PerspectiveCamera makeDefault position={[0, 5, 10]} fov={60} />
         <OrbitControls 
+          enabled={!isDraggingFlower}
           enablePan={true}
           enableZoom={true}
           enableRotate={true}
@@ -317,11 +528,20 @@ function App() {
                 flower={flower}
                 definition={definition}
                 onClick={(clickedFlower) => {
+                  console.log('🎯 Flower onClick triggered in App.tsx');
+                  console.log('  - Flower:', clickedFlower);
+                  console.log('  - Definition:', definition);
+                  console.log('  - Setting selectedFlower...');
+                  
                   setSelectedFlower({ flower: clickedFlower, definition });
                   setPlacingFlowerType(null);
+                  
+                  console.log('  ✅ selectedFlower set, panel should appear');
                 }}
+                onDragStart={() => setIsDraggingFlower(true)}
                 onDragEnd={(draggedFlower, newPosition) => {
                   updateFlower(draggedFlower.id, { position: newPosition });
+                  setIsDraggingFlower(false);
                 }}
                 draggable={!placingFlowerType}
               />
