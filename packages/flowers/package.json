@@ -1,0 +1,19 @@
+{
+  "name": "@horizons/flowers",
+  "version": "1.0.0",
+  "description": "Digital garden flower system with 3D models and interactions",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {},
+  "dependencies": {
+    "@react-three/drei": "^9.117.3",
+    "@react-three/fiber": "^8.17.10",
+    "react": "^18.3.1",
+    "three": "^0.171.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/three": "^0.171.0",
+    "typescript": "~5.6.2"
+  }
+}
