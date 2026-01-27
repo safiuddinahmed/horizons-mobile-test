@@ -193,99 +193,108 @@ export function FlowerModel({
         }}
       />
       
-      {/* Beautiful hover card - calm & poetic - LARGER */}
+      {/* Romantic Gift Tag - Cute & Pretty */}
       {hovered && !dragging && (
         <Html position={[0, 3, 0]} center distanceFactor={8}>
           <div style={{
-            background: 'linear-gradient(135deg, rgba(25,25,30,0.96), rgba(35,35,45,0.94))',
-            backgroundImage: `
-              linear-gradient(rgba(25,25,30,0.96), rgba(35,35,45,0.94)),
-              linear-gradient(135deg, ${definition.color}60, ${definition.color}20)
-            `,
-            backgroundOrigin: 'border-box',
-            backgroundClip: 'padding-box, border-box',
-            backdropFilter: 'blur(24px)',
-            padding: '24px 28px',
-            borderRadius: '18px',
-            boxShadow: `
-              0 12px 40px rgba(0,0,0,0.5),
-              0 0 0 1px rgba(255,255,255,0.08),
-              0 0 30px ${definition.color}25
-            `,
-            border: '1.5px solid transparent',
-            minWidth: '280px',
-            maxWidth: '320px',
+            background: '#FFF8F0',
+            padding: '20px 24px',
+            borderRadius: '12px',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.15), 0 0 0 2px #FFE4E1',
+            minWidth: '260px',
+            maxWidth: '300px',
             pointerEvents: 'none',
-            userSelect: 'none'
+            userSelect: 'none',
+            position: 'relative'
           }}>
-            {/* Flower Name - Calm & Poetic - LARGER */}
+            {/* Decorative top corner */}
             <div style={{
-              fontSize: '22px',
-              fontWeight: 600,
-              color: '#FFFFFF',
-              marginBottom: '10px',
-              letterSpacing: '0.3px',
-              textShadow: `0 2px 8px ${definition.color}40`
+              position: 'absolute',
+              top: '-8px',
+              right: '20px',
+              fontSize: '20px'
             }}>
-              {definition.name}
+              🎀
             </div>
             
-            {/* Brief Symbolism - Italicized Quote Style - LARGER */}
+            {/* Flower emoji + Name */}
             <div style={{
-              fontSize: '15px',
-              color: '#B8B8C0',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px',
+              marginBottom: '12px'
+            }}>
+              <div style={{ fontSize: '32px' }}>
+                {definition.id === 1 ? '🌼' : 
+                 definition.id === 2 ? '🌹' : '🌻'}
+              </div>
+              <div style={{
+                fontSize: '20px',
+                fontWeight: 700,
+                color: '#5C4033',
+                fontFamily: 'Georgia, serif'
+              }}>
+                {definition.name}
+              </div>
+            </div>
+            
+            {/* Symbolism - Handwritten style */}
+            <div style={{
+              fontSize: '14px',
+              color: '#8B6F47',
               fontStyle: 'italic',
-              lineHeight: '1.6',
+              lineHeight: '1.5',
               marginBottom: '14px',
-              borderLeft: `2px solid ${definition.color}40`,
-              paddingLeft: '14px'
+              paddingLeft: '10px',
+              borderLeft: `3px solid ${definition.color}`,
+              fontFamily: 'Georgia, serif'
             }}>
               "{definition.symbolism}"
             </div>
             
-            {/* State Badge - Soft & Meaningful - LARGER */}
+            {/* State badge - Cute pill */}
             <div style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: '8px',
-              padding: '8px 14px',
-              background: flower.state === 'BUD' 
-                ? `${definition.color}15` 
-                : `${definition.color}20`,
-              border: `1px solid ${definition.color}50`,
-              borderRadius: '20px',
-              fontSize: '13px',
-              fontWeight: 500,
-              color: definition.color
+              gap: '6px',
+              padding: '6px 12px',
+              background: flower.state === 'BUD' ? '#FFF4E0' : '#FFE4E9',
+              border: `1.5px solid ${flower.state === 'BUD' ? '#FFD700' : definition.color}`,
+              borderRadius: '16px',
+              fontSize: '12px',
+              fontWeight: 600,
+              color: '#5C4033'
             }}>
               {flower.state === 'BUD' ? (
                 <>🌱 Waiting to bloom</>
               ) : (
-                <>🌸 Bloomed</>
+                <>🌸 In full bloom</>
               )}
             </div>
             
-            {/* Planted timestamp - Subtle - LARGER */}
+            {/* Planted date - Subtle */}
             <div style={{
-              marginTop: '12px',
+              marginTop: '10px',
               fontSize: '11px',
-              color: '#808090',
-              opacity: 0.7
+              color: '#A0826D',
+              textAlign: 'center'
             }}>
               Planted {new Date(flower.placedAt).toLocaleDateString()}
             </div>
             
-            {/* Click hint */}
+            {/* Call to action - Romantic */}
             <div style={{
               marginTop: '12px',
-              padding: '8px 12px',
-              background: 'rgba(255,255,255,0.05)',
+              padding: '10px',
+              background: 'linear-gradient(135deg, #FFE4E1, #FFF0F5)',
+              border: '1px dashed #FFB6C1',
               borderRadius: '8px',
               textAlign: 'center',
-              fontSize: '12px',
-              color: '#A0A0B0'
+              fontSize: '13px',
+              fontWeight: 600,
+              color: '#C73866'
             }}>
-              👆 Click to view details
+              💌 Tap to read message
             </div>
           </div>
         </Html>

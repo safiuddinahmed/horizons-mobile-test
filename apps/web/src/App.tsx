@@ -238,183 +238,288 @@ function App() {
         </div>
       )}
 
-      {/* Detailed Flower Panel - Right Side Slide-in */}
+      {/* Romantic Greeting Card Panel - Right Side */}
       {selectedFlower && (
         <div style={{
           position: 'fixed',
           top: 0,
           right: 0,
-          width: '420px',
+          width: '440px',
           height: '100vh',
-          background: 'linear-gradient(to left, rgba(18,18,22,0.98), rgba(25,25,30,0.96))',
-          backdropFilter: 'blur(30px)',
-          boxShadow: '-8px 0 40px rgba(0,0,0,0.6)',
+          background: '#FFF8F0',
+          boxShadow: '-8px 0 32px rgba(0,0,0,0.2)',
           zIndex: 200,
-          borderLeft: `3px solid ${selectedFlower.definition.color}`,
           overflow: 'auto',
-          animation: 'slideInRight 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)'
+          animation: 'slideInRight 0.4s cubic-bezier(0.25, 0.8, 0.25, 1)',
+          backgroundImage: `
+            radial-gradient(circle at 20% 80%, rgba(255, 182, 193, 0.08) 0%, transparent 50%),
+            radial-gradient(circle at 80% 20%, rgba(255, 228, 225, 0.12) 0%, transparent 50%)
+          `
         }}>
-          {/* Header Section */}
+          {/* Close Button - FIXED - Romantic Style */}
+          <button 
+            onClick={(e) => {
+              e.stopPropagation();
+              console.log('✕ Close button clicked');
+              setSelectedFlower(null);
+            }}
+            style={{
+              position: 'absolute',
+              top: '20px',
+              right: '20px',
+              background: '#FFFFFF',
+              border: '2px solid #FFE4E1',
+              borderRadius: '50%',
+              width: '36px',
+              height: '36px',
+              cursor: 'pointer',
+              fontSize: '16px',
+              color: '#8B6F47',
+              transition: 'all 0.2s',
+              zIndex: 1000,
+              pointerEvents: 'auto',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = '#FFE4E1';
+              e.currentTarget.style.color = '#5C4033';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = '#FFFFFF';
+              e.currentTarget.style.color = '#8B6F47';
+            }}
+          >
+            ✕
+          </button>
+          
+          {/* Decorative Header */}
           <div style={{
-            padding: '32px 32px 24px',
-            borderBottom: '1px solid rgba(255,255,255,0.08)'
+            padding: '40px 32px 32px',
+            borderBottom: '2px solid #FFE4E1',
+            position: 'relative'
           }}>
-            {/* Close Button */}
-            <button 
-              onClick={() => setSelectedFlower(null)}
-              style={{
-                position: 'absolute',
-                top: '24px',
-                right: '24px',
-                background: 'rgba(255,255,255,0.08)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '40px',
-                height: '40px',
-                cursor: 'pointer',
-                fontSize: '18px',
-                color: '#FFFFFF',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-              }}
-            >
-              ✕
-            </button>
-            
-            {/* Flower Icon */}
+            {/* Decorative elements */}
             <div style={{
-              fontSize: '64px',
+              position: 'absolute',
+              top: '20px',
+              left: '20px',
+              fontSize: '24px',
+              opacity: 0.6
+            }}>
+              🌸
+            </div>
+            <div style={{
+              position: 'absolute',
+              top: '20px',
+              right: '60px',
+              fontSize: '24px',
+              opacity: 0.6
+            }}>
+              🌸
+            </div>
+            
+            {/* "For You" Header */}
+            <div style={{
               textAlign: 'center',
+              fontSize: '14px',
+              fontWeight: 600,
+              color: '#C73866',
               marginBottom: '16px',
-              filter: `drop-shadow(0 4px 16px ${selectedFlower.definition.color}40)`
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              fontFamily: 'Georgia, serif'
+            }}>
+              💝 For You
+            </div>
+            
+            {/* Flower Icon - Large */}
+            <div style={{
+              fontSize: '72px',
+              textAlign: 'center',
+              marginBottom: '20px'
             }}>
               {selectedFlower.definition.id === 1 ? '🌼' : 
                selectedFlower.definition.id === 2 ? '🌹' : '🌻'}
             </div>
             
-            {/* Flower Name */}
+            {/* Flower Name - Romantic Style */}
             <h2 style={{
-              fontSize: '28px',
-              fontWeight: 600,
+              fontSize: '32px',
+              fontWeight: 700,
               textAlign: 'center',
-              marginBottom: '8px',
-              background: `linear-gradient(135deg, #FFFFFF, ${selectedFlower.definition.color})`,
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              letterSpacing: '0.5px'
+              marginBottom: '12px',
+              color: '#5C4033',
+              letterSpacing: '0.5px',
+              fontFamily: 'Georgia, serif'
             }}>
               {selectedFlower.definition.name}
             </h2>
             
-            {/* State & Date */}
+            {/* State Badge - Cute */}
             <div style={{
               textAlign: 'center',
-              fontSize: '13px',
-              color: '#A0A0B0',
-              marginBottom: '4px'
+              marginBottom: '12px'
             }}>
-              {selectedFlower.flower.state === 'BUD' ? (
-                <>🌱 Bud · Waiting to bloom</>
-              ) : (
-                <>🌸 Bloomed</>
-              )}
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                padding: '8px 16px',
+                background: selectedFlower.flower.state === 'BUD' ? '#FFF4E0' : '#FFE4E9',
+                border: `2px solid ${selectedFlower.flower.state === 'BUD' ? '#FFD700' : selectedFlower.definition.color}`,
+                borderRadius: '20px',
+                fontSize: '13px',
+                fontWeight: 600,
+                color: '#5C4033'
+              }}>
+                {selectedFlower.flower.state === 'BUD' ? (
+                  <>🌱 A surprise waiting to bloom</>
+                ) : (
+                  <>🌸 In full bloom</>
+                )}
+              </div>
             </div>
             
+            {/* Planted Date - Subtle */}
             <div style={{
               textAlign: 'center',
-              fontSize: '11px',
-              color: '#70707D'
+              fontSize: '12px',
+              color: '#A0826D',
+              fontStyle: 'italic'
             }}>
-              Planted {new Date(selectedFlower.flower.placedAt).toLocaleDateString()}
+              Planted with love on {new Date(selectedFlower.flower.placedAt).toLocaleDateString()}
             </div>
           </div>
           
-          {/* Content Section */}
+          {/* Content Section - Romantic Card Body */}
           <div style={{ padding: '32px' }}>
-            {/* Symbolism Card */}
+            {/* Symbolism Quote - Like a love letter */}
             <div style={{
-              background: 'rgba(255,255,255,0.03)',
-              border: `1px solid ${selectedFlower.definition.color}30`,
-              borderRadius: '12px',
-              padding: '16px 20px',
-              marginBottom: '24px'
+              background: '#FFFFFF',
+              border: `3px solid ${selectedFlower.definition.color}40`,
+              borderRadius: '16px',
+              padding: '24px',
+              marginBottom: '24px',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
+              position: 'relative'
             }}>
+              {/* Decorative quotation marks */}
               <div style={{
-                fontSize: '11px',
-                fontWeight: 600,
+                position: 'absolute',
+                top: '12px',
+                left: '16px',
+                fontSize: '32px',
                 color: selectedFlower.definition.color,
-                marginBottom: '8px',
-                textTransform: 'uppercase',
-                letterSpacing: '1px'
+                opacity: 0.3,
+                lineHeight: '0',
+                fontFamily: 'Georgia, serif'
               }}>
-                Symbolism
+                "
               </div>
+              
               <div style={{
-                fontSize: '14px',
-                color: '#D0D0D8',
+                fontSize: '16px',
+                color: '#5C4033',
                 fontStyle: 'italic',
-                lineHeight: '1.6'
+                lineHeight: '1.7',
+                textAlign: 'center',
+                fontFamily: 'Georgia, serif',
+                paddingTop: '8px'
               }}>
-                "{selectedFlower.definition.symbolism}"
+                {selectedFlower.definition.symbolism}
+              </div>
+              
+              <div style={{
+                position: 'absolute',
+                bottom: '12px',
+                right: '16px',
+                fontSize: '32px',
+                color: selectedFlower.definition.color,
+                opacity: 0.3,
+                lineHeight: '0',
+                fontFamily: 'Georgia, serif'
+              }}>
+                "
               </div>
             </div>
             
-            {/* Description Card */}
+            {/* Description - Letter style */}
             <div style={{
-              background: 'rgba(255,255,255,0.04)',
+              background: 'linear-gradient(135deg, #FFF9F0, #FFFCF7)',
+              border: '2px dashed #FFB6C1',
               borderRadius: '12px',
-              padding: '20px',
-              marginBottom: '20px',
-              borderLeft: `3px solid ${selectedFlower.definition.color}`
+              padding: '24px',
+              marginBottom: '24px'
             }}>
               <div style={{
-                fontSize: '11px',
-                color: '#A0A0B0',
-                marginBottom: '10px',
-                fontWeight: 500
-              }}>
-                ABOUT THIS FLOWER
-              </div>
-              <div style={{
-                fontSize: '15px',
-                color: '#E8E8F0',
-                lineHeight: '1.7'
+                fontSize: '16px',
+                color: '#6B5744',
+                lineHeight: '1.8',
+                fontFamily: 'Georgia, serif'
               }}>
                 {selectedFlower.definition.description}
               </div>
             </div>
             
-            {/* State Message */}
+            {/* State Message - Cute prompt */}
             {selectedFlower.flower.state === 'BUD' && (
               <div style={{
                 textAlign: 'center',
-                padding: '32px 20px',
-                color: '#909099'
+                padding: '28px 20px',
+                background: 'linear-gradient(135deg, #FFF4E0, #FFEBE6)',
+                borderRadius: '16px',
+                border: '2px solid #FFD700'
               }}>
-                <div style={{ fontSize: '32px', marginBottom: '12px' }}>🌱</div>
-                <div style={{ fontSize: '14px', lineHeight: '1.6' }}>
-                  This flower is waiting to bloom.<br/>
-                  <span style={{ color: selectedFlower.definition.color, fontWeight: 600 }}>
-                    Click the button below to reveal its beauty.
+                <div style={{ fontSize: '40px', marginBottom: '12px' }}>🌱</div>
+                <div style={{ 
+                  fontSize: '15px', 
+                  lineHeight: '1.7',
+                  color: '#5C4033',
+                  fontFamily: 'Georgia, serif'
+                }}>
+                  Your surprise is waiting to bloom!<br/>
+                  <span style={{ 
+                    color: '#C73866', 
+                    fontWeight: 700,
+                    fontSize: '16px'
+                  }}>
+                    Tap below to see the magic ✨
                   </span>
+                </div>
+              </div>
+            )}
+            
+            {/* Bloomed state message */}
+            {selectedFlower.flower.state === 'BLOOMED' && (
+              <div style={{
+                textAlign: 'center',
+                padding: '28px 20px',
+                background: 'linear-gradient(135deg, #FFE4E9, #FFF0F5)',
+                borderRadius: '16px',
+                border: `2px solid ${selectedFlower.definition.color}`
+              }}>
+                <div style={{ fontSize: '40px', marginBottom: '12px' }}>🌸</div>
+                <div style={{ 
+                  fontSize: '15px', 
+                  lineHeight: '1.7',
+                  color: '#5C4033',
+                  fontFamily: 'Georgia, serif',
+                  fontStyle: 'italic'
+                }}>
+                  This beautiful flower has bloomed,<br/>
+                  just for you 💝
                 </div>
               </div>
             )}
           </div>
           
-          {/* Action Footer */}
+          {/* Action Footer - Softer styling */}
           <div style={{
             position: 'sticky',
             bottom: 0,
             padding: '20px 32px',
-            background: 'rgba(18,18,22,0.95)',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            backdropFilter: 'blur(20px)'
+            background: '#FFF8F0',
+            borderTop: '2px solid #FFE4E1'
           }}>
             <button
               onClick={() => {
@@ -424,22 +529,23 @@ function App() {
               style={{
                 width: '100%',
                 padding: '12px',
-                background: 'rgba(220, 20, 60, 0.15)',
-                border: '1px solid rgba(220, 20, 60, 0.3)',
-                borderRadius: '10px',
-                color: '#FF6B6B',
+                background: '#FFFFFF',
+                border: '2px solid #E8B4B8',
+                borderRadius: '12px',
+                color: '#C73866',
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: 600,
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                fontFamily: 'Georgia, serif'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(220, 20, 60, 0.25)';
-                e.currentTarget.style.borderColor = 'rgba(220, 20, 60, 0.5)';
+                e.currentTarget.style.background = '#FFE4E9';
+                e.currentTarget.style.borderColor = '#C73866';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(220, 20, 60, 0.15)';
-                e.currentTarget.style.borderColor = 'rgba(220, 20, 60, 0.3)';
+                e.currentTarget.style.background = '#FFFFFF';
+                e.currentTarget.style.borderColor = '#E8B4B8';
               }}
             >
               Remove Flower
@@ -448,7 +554,7 @@ function App() {
         </div>
       )}
 
-      {/* External Bloom Button - Centered Bottom (only for buds) */}
+      {/* Romantic Bloom Button - Centered Bottom (only for buds) */}
       {selectedFlower && selectedFlower.flower.state === 'BUD' && (
         <button
           onClick={() => {
@@ -459,29 +565,33 @@ function App() {
             bottom: '40px',
             left: '50%',
             transform: 'translateX(-50%)',
-            padding: '16px 48px',
-            fontSize: '17px',
-            background: 'linear-gradient(135deg, #4CAF50, #45a049)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '32px',
+            padding: '18px 56px',
+            fontSize: '18px',
+            background: 'linear-gradient(135deg, #FFB6C1, #FF69B4)',
+            color: '#FFFFFF',
+            border: '3px solid #FFFFFF',
+            borderRadius: '50px',
             cursor: 'pointer',
-            boxShadow: '0 8px 24px rgba(76, 175, 80, 0.35)',
-            fontWeight: 600,
+            boxShadow: '0 8px 24px rgba(255, 105, 180, 0.4), 0 0 0 4px rgba(255, 182, 193, 0.3)',
+            fontWeight: 700,
             zIndex: 150,
             transition: 'all 0.3s',
-            letterSpacing: '0.3px'
+            letterSpacing: '0.5px',
+            fontFamily: 'Georgia, serif',
+            textShadow: '0 2px 4px rgba(0,0,0,0.2)'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateX(-50%) translateY(-2px)';
-            e.currentTarget.style.boxShadow = '0 12px 32px rgba(76, 175, 80, 0.45)';
+            e.currentTarget.style.transform = 'translateX(-50%) translateY(-4px) scale(1.05)';
+            e.currentTarget.style.boxShadow = '0 12px 36px rgba(255, 105, 180, 0.5), 0 0 0 4px rgba(255, 182, 193, 0.5)';
+            e.currentTarget.style.background = 'linear-gradient(135deg, #FF69B4, #FFB6C1)';
           }}
           onMouseLeave={(e) => {
             e.currentTarget.style.transform = 'translateX(-50%)';
-            e.currentTarget.style.boxShadow = '0 8px 24px rgba(76, 175, 80, 0.35)';
+            e.currentTarget.style.boxShadow = '0 8px 24px rgba(255, 105, 180, 0.4), 0 0 0 4px rgba(255, 182, 193, 0.3)';
+            e.currentTarget.style.background = 'linear-gradient(135deg, #FFB6C1, #FF69B4)';
           }}
         >
-          🌱 Bloom this Flower
+          ✨ Bloom this Flower ✨
         </button>
       )}
 
