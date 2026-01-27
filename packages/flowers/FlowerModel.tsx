@@ -177,7 +177,7 @@ export function FlowerModel({
       ref={meshRef}
       position={[flower.position.x, flower.position.y, flower.position.z]}
       rotation={[0, flower.rotation, 0]}
-      scale={flower.scale}
+      scale={1}
       onPointerOver={handlePointerOver}
       onPointerOut={handlePointerOut}
       onClick={handleClick}
@@ -187,7 +187,7 @@ export function FlowerModel({
       <AnimatedFlowerBloom
         definition={definition}
         isBloom={isBloom}
-        scale={1}
+        scale={flower.scale}
         onBloomComplete={() => {
           console.log(`${definition.name} bloomed!`);
         }}
