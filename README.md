@@ -1,25 +1,25 @@
-# 🌸 Horizons Memory Garden - Mobile & Web POC
+# 🌸 Horizons Memory Garden - Web Application
 
-A proof-of-concept for beautiful 3D garden environments with interactive flowers, built for both mobile (iOS/Android) and web.
+A beautiful 3D garden environment with interactive flowers, built with React, Three.js, and TypeScript.
 
 ## 🏗️ Project Structure
 
 ```
 horizons-mobile-test/
 ├── apps/
-│   ├── mobile/              # Expo app (iOS + Android) - Coming soon
-│   └── web/                 # Vite React app ✅
-│
-├── packages/
-│   ├── gardens/             # Garden scenes & themes - Coming soon
-│   ├── flowers/             # Flower components - Coming soon
-│   ├── interactions/        # Drag/drop, hover, click - Coming soon
-│   └── ui/                  # Shared UI components - Coming soon
-│
-└── assets/
-    └── models/              # GLB 3D models - To be added
-        ├── flowers/
-        └── environment/
+│   └── web/                 # Vite React app
+│       ├── src/
+│       │   ├── flowers/     # Flower components & logic
+│       │   ├── gardens/     # Garden scenes & themes
+│       │   ├── interactions/ # Drag/drop, hover, click
+│       │   ├── ui/          # Shared UI components
+│       │   ├── App.tsx      # Main app
+│       │   └── main.tsx     # Entry point
+│       └── public/
+│           └── models/      # GLB 3D models
+│               ├── flowers/
+│               └── environment/
+└── package.json             # Root package
 ```
 
 ## 🌳 Garden Themes
@@ -48,61 +48,66 @@ horizons-mobile-test/
 - **Colors**: Snow white, ice blue
 - **Effect**: Gentle snowfall
 
-## 🌸 Flowers (POC)
+## 🌸 Flowers
 
 - **Simple Daisy** - Pure and innocent (#FFFFFF)
 - **Classic Rose** - Timeless love (#FF0000)
-- **Wildflower** - Unplanned moments (#FFD700)
+- **Bright Sunflower** - Radiant joy (#FFD700)
 
 ## 🚀 Getting Started
 
 ### Install Dependencies
 
 ```bash
-npm install
+npm run install-deps
 ```
 
-### Run Web App
+### Run Development Server
 
 ```bash
-cd apps/web
 npm run dev
 ```
 
-### Run Mobile App (Coming Soon)
+### Build for Production
 
 ```bash
-cd apps/mobile
-npx expo start
+npm run build
+```
+
+### Preview Production Build
+
+```bash
+npm run preview
 ```
 
 ## 📦 Tech Stack
 
-- **Monorepo**: Turborepo
-- **Web**: Vite + React + TypeScript
-- **Mobile**: Expo + React Native
-- **3D**: Three.js + React Three Fiber
+- **Frontend**: Vite + React + TypeScript
+- **3D Rendering**: Three.js + React Three Fiber
+- **3D Helpers**: @react-three/drei
 - **Animation**: @react-spring/three
-- **3D Models**: GLB files from Poly Pizza
+- **Gestures**: @use-gesture/react
+- **3D Models**: GLB files
 
-## 🎯 POC Features
+## 🎯 Features
 
 - ✅ Multiple garden environments with unique atmospheres
 - ✅ 3D flower models (GLB)
-- ✅ Drag & drop flowers into garden
-- ✅ Move/reposition flowers
-- ✅ Hover to show flower info
-- ✅ Click for detailed flower panel
-- ✅ Weather particle effects (breeze, petals, leaves, snow)
+- ✅ Click to place flowers in the garden
+- ✅ Drag & drop to reposition flowers
+- ✅ Click flowers for detailed information panel
+- ✅ Bud/Bloom state system
+- ✅ Beautiful UI with romantic greeting card design
+- ✅ Seasonal weather effects (customizable per garden)
 
-## 📝 Next Steps
+## 🎮 How to Use
 
-1. Install 3D dependencies (Three.js, R3F, Drei)
-2. Create shared packages structure
-3. Build garden system
-4. Add GLB assets
-5. Implement interactions
-6. Set up Expo mobile app
+1. **Select a Garden**: Choose from the garden themes on the left panel
+2. **Add Flowers**: Click a flower type from the right panel
+3. **Place Flowers**: Click anywhere in the garden to place your selected flower
+4. **Move Flowers**: Drag and drop flowers to reposition them
+5. **View Details**: Click on a flower to see its details and symbolism
+6. **Bloom Flowers**: Click the bloom button to transform buds into blooming flowers
 
 ---
 

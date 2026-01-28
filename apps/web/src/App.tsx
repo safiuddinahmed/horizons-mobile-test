@@ -1,12 +1,12 @@
 import { Canvas, ThreeEvent } from '@react-three/fiber';
 import { OrbitControls, PerspectiveCamera } from '@react-three/drei';
 import { useState } from 'react';
-import { GardenScene } from '../../../packages/gardens/GardenScene';
-import { GARDEN_CONFIGS, GardenConfig } from '../../../packages/gardens/gardenConfigs';
-import { useFlowerGarden, FLOWER_DEFINITIONS } from '../../../packages/flowers';
-import { FlowerModel } from '../../../packages/flowers/FlowerModel';
-import { getFlowerDefinition } from '../../../packages/flowers/types';
-import type { PlacedFlower, FlowerDefinition } from '../../../packages/flowers/types';
+import { GardenScene } from './gardens/GardenScene';
+import { GARDEN_CONFIGS, GardenConfig } from './gardens/gardenConfigs';
+import { useFlowerGarden, FLOWER_DEFINITIONS } from './flowers';
+import { FlowerModel } from './flowers/FlowerModel';
+import { getFlowerDefinition } from './flowers/types';
+import type { PlacedFlower, FlowerDefinition } from './flowers/types';
 import './App.css';
 
 function App() {

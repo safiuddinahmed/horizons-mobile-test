@@ -1,21 +1,14 @@
 {
-  "name": "horizons-mobile-test",
+  "name": "horizons-web",
   "version": "1.0.0",
   "private": true,
-  "description": "Horizons Memory Garden - Mobile & Web POC",
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "description": "Horizons Memory Garden - Web Application",
   "scripts": {
-    "dev": "turbo run dev",
-    "build": "turbo run build",
-    "lint": "turbo run lint",
-    "clean": "turbo run clean && rm -rf node_modules"
-  },
-  "devDependencies": {
-    "turbo": "^2.3.3",
-    "typescript": "^5.7.2"
+    "dev": "cd apps/web && npm run dev",
+    "build": "cd apps/web && npm run build",
+    "lint": "cd apps/web && npm run lint",
+    "preview": "cd apps/web && npm run preview",
+    "install-deps": "cd apps/web && npm install"
   },
   "engines": {
     "node": ">=18.0.0"
