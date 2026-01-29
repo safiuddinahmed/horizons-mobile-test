@@ -43,19 +43,25 @@ export function GardenScene({ config, children }: GardenSceneProps) {
       {/* Sky - gradient background */}
       <color attach="background" args={[skyBottom]} />
       
-      {/* Enhanced lighting for terrain gardens */}
+      {/* PLA-style lighting - natural, soft atmosphere */}
       {usesTerrain ? (
         <>
-          {/* Hemisphere light for natural outdoor ambient */}
-          <hemisphereLight
-            args={["#B8D4E8", "#4A3829", 0.5]}
+          {/* Soft ambient - natural atmosphere */}
+          <ambientLight
+            color="#E8E4DC"
+            intensity={0.55}
           />
           
-          {/* Main directional sun - strong with clear shadows */}
+          {/* Hemisphere for sky/ground color */}
+          <hemisphereLight
+            args={["#D4E4F0", "#C8B89A", 0.3]}
+          />
+          
+          {/* Natural daylight - soft, warm */}
           <directionalLight
-            color="#FFFAF0"
-            intensity={1.5}
-            position={[20, 30, 15]}
+            color="#FFF8F0"
+            intensity={1.0}
+            position={[30, 40, 25]}
             castShadow
             shadow-mapSize-width={4096}
             shadow-mapSize-height={4096}
@@ -68,18 +74,6 @@ export function GardenScene({ config, children }: GardenSceneProps) {
             shadow-normalBias={0.02}
           />
           
-          {/* Ambient light - subtle fill to prevent pure black */}
-          <ambientLight
-            color="#C8DCF0"
-            intensity={0.25}
-          />
-          
-          {/* Fill light - from opposite side, very subtle */}
-          <directionalLight
-            color="#A8C8E0"
-            intensity={0.2}
-            position={[-15, 20, -10]}
-          />
         </>
       ) : (
         <>
