@@ -75,8 +75,8 @@ export function TerrainGround({
       
       const blend = blendNoise[i] || 0;
       
-      // PLA has WIDE, VISIBLE dirt paths - lower threshold
-      const dirtThreshold = 0.58 + (clampedHeight * 0.12);
+      // Garden-appropriate dirt - subtle accent paths, not fields
+      const dirtThreshold = 0.88 + (clampedHeight * 0.08);
       
       if (blend > dirtThreshold) {
         // Dirt area - smooth transition

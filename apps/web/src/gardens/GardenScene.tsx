@@ -105,7 +105,7 @@ export function GardenScene({ config, children }: GardenSceneProps) {
           {/* New terrain system with rolling hills */}
           <BaseGroundLayer size={60} color={config.colors.ground} />
           <TerrainGround
-            size={40}
+            size={60}
             resolution={150}
             seed={42}
             amplitude={0.9}
