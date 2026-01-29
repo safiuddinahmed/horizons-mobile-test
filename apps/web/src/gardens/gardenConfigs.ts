@@ -53,6 +53,53 @@ export interface GardenConfig {
 }
 
 /**
+ * Test Garden - Experimental garden for testing new features
+ * FREE tier - RS3-inspired with rolling terrain
+ */
+export const testGarden: GardenConfig = {
+  key: 'test_garden',
+  displayName: 'Test Garden',
+  description: 'An experimental garden showcasing rolling hills and RS3-inspired aesthetics',
+  tierAccess: 'FREE',
+  
+  colors: {
+    primary: '#5A8F67',      // Rich forest green (main grass)
+    secondary: '#7FB88D',    // Lighter highlight green
+    sky: ['#87CEEB', '#B0D4E8'], // Clear blue sky gradient
+    ground: '#6B5744',       // Warm earth/soil
+    ambient: '#F5F0E8'       // Warm natural light
+  },
+  
+  lighting: {
+    ambient: {
+      color: '#F5F0E8',
+      intensity: 0.65
+    },
+    directional: {
+      color: '#FFF5E6',
+      intensity: 0.85,
+      position: [10, 18, 8]
+    }
+  },
+  
+  environment: {
+    ground: 'lush_grass',
+    trees: {
+      type: 'mixed',
+      count: 6,
+      spacing: 'medium'
+    },
+    details: ['rocks', 'stones', 'grass_tufts', 'flower_patches']
+  },
+  
+  particles: {
+    type: 'breeze',
+    density: 'light',
+    speed: 0.4
+  }
+};
+
+/**
  * Quiet Garden - Peaceful sanctuary for contemplation
  * FREE tier - Warm, inviting, gentle atmosphere
  */
@@ -250,6 +297,7 @@ export const winterWonderland: GardenConfig = {
  * All available gardens mapped by key
  */
 export const GARDEN_CONFIGS: Record<string, GardenConfig> = {
+  test_garden: testGarden,
   quiet_garden: quietGarden,
   spring_meadow: springMeadow,
   autumn_grove: autumnGrove,

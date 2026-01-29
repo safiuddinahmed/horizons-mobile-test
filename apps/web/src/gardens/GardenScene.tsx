@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { useGLTF } from '@react-three/drei';
-import { GardenConfig } from './gardenConfigs';
+import type { GardenConfig } from './gardenConfigs';
 import { GrassField } from './components/GrassField';
 import { SeasonalTrees } from './components/SeasonalTrees';
 import { EnvironmentProps } from './components/EnvironmentProps';
+import { TerrainGround, BaseGroundLayer } from './components/TerrainGround';
 
 interface GardenSceneProps {
   config: GardenConfig;
@@ -16,7 +17,10 @@ interface GardenSceneProps {
  */
 export function GardenScene({ config, children }: GardenSceneProps) {
   // Parse sky gradient colors
-  const [skyTop, skyBottom] = config.colors.sky;
+  const [_skyTop, skyBottom] = config.colors.sky;
+  
+  // Check if this garden uses the new terrain system
+  const usesTerrain = config.key === 'test_garden';
   
   // Determine season for tree selection
   const season = useMemo(() => {
@@ -39,45 +43,109 @@ export function GardenScene({ config, children }: GardenSceneProps) {
       {/* Sky - gradient background */}
       <color attach="background" args={[skyBottom]} />
       
-      {/* Ambient lighting */}
-      <ambientLight 
-        color={config.lighting.ambient.color}
-        intensity={config.lighting.ambient.intensity}
-      />
+      {/* Enhanced lighting for terrain gardens */}
+      {usesTerrain ? (
+        <>
+          {/* Hemisphere light for natural outdoor ambient */}
+          <hemisphereLight
+            args={["#B8D4E8", "#4A3829", 0.5]}
+          />
+          
+          {/* Main directional sun - strong with clear shadows */}
+          <directionalLight
+            color="#FFFAF0"
+            intensity={1.5}
+            position={[20, 30, 15]}
+            castShadow
+            shadow-mapSize-width={4096}
+            shadow-mapSize-height={4096}
+            shadow-camera-far={70}
+            shadow-camera-left={-30}
+            shadow-camera-right={30}
+            shadow-camera-top={30}
+            shadow-camera-bottom={-30}
+            shadow-bias={-0.0005}
+            shadow-normalBias={0.02}
+          />
+          
+          {/* Ambient light - subtle fill to prevent pure black */}
+          <ambientLight
+            color="#C8DCF0"
+            intensity={0.25}
+          />
+          
+          {/* Fill light - from opposite side, very subtle */}
+          <directionalLight
+            color="#A8C8E0"
+            intensity={0.2}
+            position={[-15, 20, -10]}
+          />
+        </>
+      ) : (
+        <>
+          {/* Standard lighting */}
+          <ambientLight 
+            color={config.lighting.ambient.color}
+            intensity={config.lighting.ambient.intensity}
+          />
+          
+          <directionalLight
+            color={config.lighting.directional.color}
+            intensity={config.lighting.directional.intensity}
+            position={config.lighting.directional.position}
+            castShadow
+            shadow-mapSize-width={2048}
+            shadow-mapSize-height={2048}
+            shadow-camera-far={50}
+            shadow-camera-left={-20}
+            shadow-camera-right={20}
+            shadow-camera-top={20}
+            shadow-camera-bottom={-20}
+          />
+        </>
+      )}
       
-      {/* Directional sunlight */}
-      <directionalLight
-        color={config.lighting.directional.color}
-        intensity={config.lighting.directional.intensity}
-        position={config.lighting.directional.position}
-        castShadow
-        shadow-mapSize-width={2048}
-        shadow-mapSize-height={2048}
-        shadow-camera-far={50}
-        shadow-camera-left={-20}
-        shadow-camera-right={20}
-        shadow-camera-top={20}
-        shadow-camera-bottom={-20}
-      />
-      
-      {/* Ground plane - base layer */}
-      <Ground color={config.colors.ground} size={60} />
-      
-      {/* Grass field - fills the entire area with proper colors */}
-      <GrassField 
-        color={config.colors.primary} 
-        density={grassDensity}
-        areaSize={40}
-      />
+      {/* Render terrain or traditional ground based on garden */}
+      {usesTerrain ? (
+        <>
+          {/* New terrain system with rolling hills */}
+          <BaseGroundLayer size={60} color={config.colors.ground} />
+          <TerrainGround
+            size={40}
+            resolution={150}
+            seed={42}
+            amplitude={0.9}
+            grassColor={config.colors.primary}
+          />
+        </>
+      ) : (
+        <>
+          {/* Traditional flat ground */}
+          <Ground color={config.colors.ground} size={60} />
+          <GrassField 
+            color={config.colors.primary} 
+            density={grassDensity}
+            areaSize={40}
+          />
+        </>
+      )}
       
       {/* Seasonal trees - vary spread based on garden */}
-      <SeasonalTrees 
-        season={season}
-        count={config.environment.trees.count}
-        spread={config.key === 'quiet_garden' ? 12 : 16} // Closer for quiet garden
-      />
+      {!usesTerrain && (
+        <SeasonalTrees 
+          season={season}
+          count={config.environment.trees.count}
+          spread={config.key === 'quiet_garden' ? 12 : 16} // Closer for quiet garden
+        />
+      )}
       
       {/* Garden-specific decorations */}
+      {config.key === 'test_garden' && (
+        <>
+          {/* Decorations removed for terrain testing */}
+        </>
+      )}
+      
       {config.key === 'quiet_garden' && (
         <>
           <EnvironmentProps type="stones" count={8} spread={10} />
