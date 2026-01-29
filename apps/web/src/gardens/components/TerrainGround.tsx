@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 import { extend } from '@react-three/fiber';
 import { generateHeightmap, applyEdgeFalloff } from '../utils/terrainUtils';
-import { createGrassTexture, createDirtTexture } from '../utils/terrainTextures';
+import { createGrassTexture, createGrassStrokeTexture, createDirtTexture } from '../utils/terrainTextures';
 
 // Extend R3F with Three.js primitives
 extend({ Mesh: THREE.Mesh, PlaneGeometry: THREE.PlaneGeometry, MeshStandardMaterial: THREE.MeshStandardMaterial });
@@ -97,10 +97,11 @@ export function TerrainGround({
     return { geometry, heightmap };
   }, [size, resolution, seed, amplitude, grassColor]);
   
-  // Create textures
+  // Create textures - TWO LAYER SYSTEM
   const textures = useMemo(() => {
     return {
       grass: createGrassTexture(512),
+      grassStrokes: createGrassStrokeTexture(256), // NEW: Stroke overlay!
       dirt: createDirtTexture(512)
     };
   }, []);
@@ -111,6 +112,7 @@ export function TerrainGround({
     return new THREE.ShaderMaterial({
       uniforms: {
         grassTexture: { value: textures.grass },
+        grassStrokeTexture: { value: textures.grassStrokes }, // NEW!
         dirtTexture: { value: textures.dirt },
         lightDirection: { value: new THREE.Vector3(0.5, 1, 0.5).normalize() },
         ambientColor: { value: new THREE.Color('#F5F0E8') },
@@ -122,17 +124,20 @@ export function TerrainGround({
         varying float vBlend;
         varying vec3 vNormal;
         varying vec3 vPosition;
+        varying vec3 vWorldPos;
         
         void main() {
           vUv = uv;
           vBlend = blendWeight;
           vNormal = normalize(normalMatrix * normal);
           vPosition = (modelViewMatrix * vec4(position, 1.0)).xyz;
+          vWorldPos = (modelMatrix * vec4(position, 1.0)).xyz; // World position!
           gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
         }
       `,
       fragmentShader: `
         uniform sampler2D grassTexture;
+        uniform sampler2D grassStrokeTexture;
         uniform sampler2D dirtTexture;
         uniform vec3 lightDirection;
         uniform vec3 ambientColor;
@@ -142,24 +147,40 @@ export function TerrainGround({
         varying float vBlend;
         varying vec3 vNormal;
         varying vec3 vPosition;
+        varying vec3 vWorldPos;
         
         void main() {
-          // Sample textures
+          // Sample base textures (UV space)
           vec4 grassColor = texture2D(grassTexture, vUv);
           vec4 dirtColor = texture2D(dirtTexture, vUv);
           
           // Blend between grass and dirt
           vec4 baseColor = mix(grassColor, dirtColor, vBlend);
           
-          // Simple diffuse lighting (PLA-style)
+          // Sample grass strokes in WORLD SPACE (key!)
+          vec2 worldUV = vWorldPos.xz * 0.15; // World-aligned tiling
+          vec4 stroke = texture2D(grassStrokeTexture, worldUV);
+          
+          // Tint strokes toward yellow-green
+          stroke.rgb = mix(stroke.rgb, vec3(0.75, 0.78, 0.45), 0.6);
+          stroke.a *= 0.35; // Reduce opacity
+          
+          // Apply strokes ADDITIVELY to base (only on grass areas)
+          vec3 color = baseColor.rgb;
+          color = mix(color, color + stroke.rgb, stroke.a * (1.0 - vBlend));
+          
+          // Simple diffuse lighting
           float diffuse = max(dot(vNormal, lightDirection), 0.0);
-          diffuse = diffuse * 0.6 + 0.4; // Soften shadows (PLA never has dark shadows)
+          diffuse = diffuse * 0.6 + 0.4;
           
           // Ambient light
           vec3 ambient = ambientColor * ambientIntensity;
           
-          // Combine
-          vec3 finalColor = baseColor.rgb * (diffuse + ambient);
+          // Apply lighting
+          vec3 litColor = color * (diffuse + ambient);
+          
+          // Reduce lighting influence on final result (strokes stay flat!)
+          vec3 finalColor = mix(color, litColor, 0.85);
           
           gl_FragColor = vec4(finalColor, 1.0);
         }
