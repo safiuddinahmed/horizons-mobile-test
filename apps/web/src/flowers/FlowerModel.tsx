@@ -35,7 +35,7 @@ export function FlowerModel({
   const [isBloom, setIsBloom] = useState(flower.state === 'BLOOMED' || flower.state === 'OPEN');
   const meshRef = useRef<THREE.Group>(null);
   const dragPlaneRef = useRef<THREE.Mesh>(null);
-  const { camera, raycaster, gl } = useThree();
+  const { camera, raycaster, gl, scene } = useThree();
   const dragOffsetRef = useRef(new THREE.Vector3());
   const pointerDownTimeRef = useRef(0);
   const pointerDownPosRef = useRef({ x: 0, y: 0 });
@@ -124,29 +124,69 @@ export function FlowerModel({
       const x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
       const y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
       
-      // Raycast to drag plane
+      // Raycast to terrain (or fallback to flat plane)
       raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
-      const intersectPoint = new THREE.Vector3();
-      raycaster.ray.intersectPlane(dragPlane, intersectPoint);
       
-      if (intersectPoint) {
-        // Apply offset and constrain to bounds
-        let newX = intersectPoint.x - dragOffsetRef.current.x;
-        let newZ = intersectPoint.z - dragOffsetRef.current.z;
+      // Try to find terrain mesh
+      const terrainMesh = scene.getObjectByName('terrain');
+      let newX = 0;
+      let newY = 0;
+      let newZ = 0;
+      
+      if (terrainMesh) {
+        // Raycast against actual terrain
+        const intersects = raycaster.intersectObject(terrainMesh, false);
         
-        // Constrain to garden bounds
-        const maxDistance = 18;
-        const distance = Math.sqrt(newX ** 2 + newZ ** 2);
-        if (distance > maxDistance) {
-          const scale = maxDistance / distance;
-          newX *= scale;
-          newZ *= scale;
+        if (intersects.length > 0) {
+          const intersectPoint = intersects[0].point;
+          newX = intersectPoint.x;
+          newY = intersectPoint.y; // Use terrain height!
+          newZ = intersectPoint.z;
+        } else {
+          // Fallback to flat plane if no intersection
+          const intersectPoint = new THREE.Vector3();
+          raycaster.ray.intersectPlane(dragPlane, intersectPoint);
+          if (intersectPoint) {
+            newX = intersectPoint.x - dragOffsetRef.current.x;
+            newY = 0;
+            newZ = intersectPoint.z - dragOffsetRef.current.z;
+          }
         }
-        
-        const newPosition = { x: newX, y: 0, z: newZ };
-        meshRef.current.position.set(newPosition.x, newPosition.y, newPosition.z);
-        onDrag?.(flower, newPosition);
+      } else {
+        // No terrain found, use flat plane
+        const intersectPoint = new THREE.Vector3();
+        raycaster.ray.intersectPlane(dragPlane, intersectPoint);
+        if (intersectPoint) {
+          newX = intersectPoint.x - dragOffsetRef.current.x;
+          newY = 0;
+          newZ = intersectPoint.z - dragOffsetRef.current.z;
+        }
       }
+      
+      // Constrain to garden bounds
+      const maxDistance = 28; // Match garden size (60/2 = 30, slight padding)
+      const distance = Math.sqrt(newX ** 2 + newZ ** 2);
+      if (distance > maxDistance) {
+        const scale = maxDistance / distance;
+        newX *= scale;
+        newZ *= scale;
+        
+        // Recalculate Y at constrained position if we have terrain
+        if (terrainMesh) {
+          const constrainedRay = new THREE.Raycaster(
+            new THREE.Vector3(newX, 100, newZ),
+            new THREE.Vector3(0, -1, 0)
+          );
+          const constrainedIntersects = constrainedRay.intersectObject(terrainMesh, false);
+          if (constrainedIntersects.length > 0) {
+            newY = constrainedIntersects[0].point.y;
+          }
+        }
+      }
+      
+      const newPosition = { x: newX, y: newY, z: newZ };
+      meshRef.current.position.set(newPosition.x, newPosition.y, newPosition.z);
+      onDrag?.(flower, newPosition);
     };
     
     const handleGlobalPointerUp = () => {

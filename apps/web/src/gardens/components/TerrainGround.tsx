@@ -191,6 +191,7 @@ export function TerrainGround({
   
   return (
     <mesh 
+      name="terrain"
       geometry={terrain.geometry} 
       material={material}
       receiveShadow
