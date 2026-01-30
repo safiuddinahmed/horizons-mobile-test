@@ -94,7 +94,7 @@ function Clouds({
     return Array.from({ length: count }, (_, i) => {
       const angle = (i / count) * Math.PI * 2;
       const distance = 80 + Math.random() * 60; // 80-140 units from center
-      const height = 25 + Math.random() * 20; // 25-45 units high
+      const height = 15 + Math.random() * 15; // 15-30 units high (lowered closer to horizon)
       
       return {
         position: [
