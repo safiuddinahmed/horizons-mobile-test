@@ -81,8 +81,8 @@ export function EnvironmentProps({
       // Fine-tune spacing to distribute evenly
       const actualSpacing = gardenSize / wallsPerSide;
       
-      // Small inset to prevent extending beyond edge
-      const inset = 2;
+      // Inset to prevent extending beyond edge
+      const inset = -1.65;
       const gardenRadius = (gardenSize / 2) - inset;
       
       // North side (positive Z)

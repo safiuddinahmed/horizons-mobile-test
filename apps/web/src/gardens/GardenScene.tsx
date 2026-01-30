@@ -103,9 +103,9 @@ export function GardenScene({ config, children }: GardenSceneProps) {
       {usesTerrain ? (
         <>
           {/* New terrain system with rolling hills */}
-          <BaseGroundLayer size={70} color={config.colors.ground} />
+          <BaseGroundLayer size={68} color={config.colors.ground} />
           <TerrainGround
-            size={70}
+            size={68}
             resolution={150}
             seed={42}
             amplitude={0.9}
@@ -115,7 +115,7 @@ export function GardenScene({ config, children }: GardenSceneProps) {
       ) : (
         <>
           {/* Traditional flat ground */}
-          <Ground color={config.colors.ground} size={70} />
+          <Ground color={config.colors.ground} size={65} />
           <GrassField 
             color={config.colors.primary} 
             density={grassDensity}
@@ -137,7 +137,7 @@ export function GardenScene({ config, children }: GardenSceneProps) {
       {config.key === 'test_garden' && (
         <>
           {/* Fence around the test garden */}
-          <EnvironmentProps type="fence" gardenSize={70} />
+          <EnvironmentProps type="fence" gardenSize={65} />
         </>
       )}
       
