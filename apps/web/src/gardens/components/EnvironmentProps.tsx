@@ -3,9 +3,10 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 
 interface EnvironmentPropsProps {
-  type: 'rocks' | 'stones' | 'fountain' | 'path' | 'springPathways';
+  type: 'rocks' | 'stones' | 'fountain' | 'path' | 'springPathways' | 'fence';
   count?: number;
   spread?: number;
+  gardenSize?: number;
 }
 
 /**
@@ -15,7 +16,8 @@ interface EnvironmentPropsProps {
 export function EnvironmentProps({ 
   type, 
   count = 5,
-  spread = 12 
+  spread = 12,
+  gardenSize = 60 
 }: EnvironmentPropsProps) {
   const modelPath = useMemo(() => {
     switch (type) {
@@ -25,6 +27,8 @@ export function EnvironmentProps({
         return '/models/environment/Stones.glb';
       case 'fountain':
         return '/models/environment/Fountain.glb';
+      case 'fence':
+        return '/models/environment/Stone Wall.glb';
       case 'path':
       case 'springPathways':
         return '/models/environment/Path Straight.glb';
@@ -66,6 +70,44 @@ export function EnvironmentProps({
       for (let i = 0; i < 3; i++) {
         pos.push([-(i + 1) * pathSpacing, 0, fountainZ]);
       }
+    } else if (type === 'fence') {
+      // Programmatic wall sizing - scales with garden size
+      // Use spacing-based calculation for connected walls
+      const desiredSpacing = 3.5; // Tight spacing for connected look
+      
+      // Calculate walls per side based on desired spacing
+      const wallsPerSide = Math.floor(gardenSize / desiredSpacing);
+      
+      // Fine-tune spacing to distribute evenly
+      const actualSpacing = gardenSize / wallsPerSide;
+      
+      // Small inset to prevent extending beyond edge
+      const inset = 2;
+      const gardenRadius = (gardenSize / 2) - inset;
+      
+      // North side (positive Z)
+      for (let i = 0; i < wallsPerSide; i++) {
+        const x = -(gardenSize / 2) + (i + 0.5) * actualSpacing;
+        pos.push([x, 0, gardenRadius]);
+      }
+      
+      // South side (negative Z)
+      for (let i = 0; i < wallsPerSide; i++) {
+        const x = -(gardenSize / 2) + (i + 0.5) * actualSpacing;
+        pos.push([x, 0, -gardenRadius]);
+      }
+      
+      // East side (positive X)
+      for (let i = 0; i < wallsPerSide; i++) {
+        const z = -(gardenSize / 2) + (i + 0.5) * actualSpacing;
+        pos.push([gardenRadius, 0, z]);
+      }
+      
+      // West side (negative X)
+      for (let i = 0; i < wallsPerSide; i++) {
+        const z = -(gardenSize / 2) + (i + 0.5) * actualSpacing;
+        pos.push([-gardenRadius, 0, z]);
+      }
     } else if (type === 'path') {
       // Path pieces in a line
       for (let i = 0; i < count; i++) {
@@ -83,13 +125,40 @@ export function EnvironmentProps({
     }
     
     return pos;
-  }, [type, count, spread]);
+  }, [type, count, spread, gardenSize]);
   
   const rotations = useMemo(() => {
-    if (type === 'springPathways') {
+    if (type === 'fence') {
+      // Programmatic rotations matching dynamic wall count
+      const desiredSpacing = 3.5;
+      const wallsPerSide = Math.floor(gardenSize / desiredSpacing);
+      
+      const rots: number[] = [];
+      
+      // North side - facing south (inward)
+      for (let i = 0; i < wallsPerSide; i++) {
+        rots.push(Math.PI); // 180 degrees
+      }
+      
+      // South side - facing north (inward)
+      for (let i = 0; i < wallsPerSide; i++) {
+        rots.push(0); // 0 degrees
+      }
+      
+      // East side - facing west (inward)
+      for (let i = 0; i < wallsPerSide; i++) {
+        rots.push(-Math.PI / 2); // -90 degrees
+      }
+      
+      // West side - facing east (inward)
+      for (let i = 0; i < wallsPerSide; i++) {
+        rots.push(Math.PI / 2); // 90 degrees
+      }
+      
+      return rots;
+    } else if (type === 'springPathways') {
       // Specific rotations for pathways to align them correctly
       const rots: number[] = [];
-      const fountainZ = -5;
       
       // North pathway (Z-aligned, no rotation needed)
       for (let i = 0; i < 3; i++) {
@@ -117,7 +186,11 @@ export function EnvironmentProps({
   }, [positions, type]);
   
   const scales = useMemo(() => {
-    if (type === 'springPathways') {
+    if (type === 'fence') {
+      // Non-uniform scaling: [width, height, depth]
+      // Height is 2x the base scale for taller walls
+      return positions.map(() => [5.0, 10.0, 5.0] as [number, number, number]);
+    } else if (type === 'springPathways') {
       // Large scale for spring pathways (8-10x larger)
       return positions.map(() => 9);
     }
@@ -152,7 +225,7 @@ function Prop({
   scene: THREE.Group;
   position: [number, number, number]; 
   rotation: number;
-  scale: number;
+  scale: number | [number, number, number];
 }) {
   const clonedScene = useMemo(() => scene.clone(), [scene]);
   
@@ -172,4 +245,5 @@ function Prop({
 useGLTF.preload('/models/environment/Rocks.glb');
 useGLTF.preload('/models/environment/Stones.glb');
 useGLTF.preload('/models/environment/Fountain.glb');
+useGLTF.preload('/models/environment/Stone Wall.glb');
 useGLTF.preload('/models/environment/Path Straight.glb');
