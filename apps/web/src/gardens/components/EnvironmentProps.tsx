@@ -81,8 +81,11 @@ export function EnvironmentProps({
       // Fine-tune spacing to distribute evenly
       const actualSpacing = gardenSize / wallsPerSide;
       
-      // Inset to prevent extending beyond edge
-      const inset = -1.65;
+      // Fixed inset based on wall geometry - works across all garden sizes
+      // Wall width is 5.0 units, so inset should be half that to sit flush at edge
+      // Negative value pushes walls outward
+      const wallWidth = 4; // Must match the scale value below
+      const inset = -(wallWidth / 2.5); // -2.5 for flush fit
       const gardenRadius = (gardenSize / 2) - inset;
       
       // North side (positive Z)

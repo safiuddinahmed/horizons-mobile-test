@@ -38,6 +38,9 @@ export function GardenScene({ config, children }: GardenSceneProps) {
     return 'medium';
   }, [config.key]);
   
+  // SINGLE SOURCE OF TRUTH - Change this one number to resize the entire garden!
+  const GARDEN_SIZE = 60;
+  
   return (
     <group>
       {/* Sky - gradient background */}
@@ -103,9 +106,9 @@ export function GardenScene({ config, children }: GardenSceneProps) {
       {usesTerrain ? (
         <>
           {/* New terrain system with rolling hills */}
-          <BaseGroundLayer size={68} color={config.colors.ground} />
+          <BaseGroundLayer size={GARDEN_SIZE} color={config.colors.ground} />
           <TerrainGround
-            size={68}
+            size={GARDEN_SIZE}
             resolution={150}
             seed={42}
             amplitude={0.9}
@@ -115,7 +118,7 @@ export function GardenScene({ config, children }: GardenSceneProps) {
       ) : (
         <>
           {/* Traditional flat ground */}
-          <Ground color={config.colors.ground} size={65} />
+          <Ground color={config.colors.ground} size={GARDEN_SIZE} />
           <GrassField 
             color={config.colors.primary} 
             density={grassDensity}
@@ -137,7 +140,7 @@ export function GardenScene({ config, children }: GardenSceneProps) {
       {config.key === 'test_garden' && (
         <>
           {/* Fence around the test garden */}
-          <EnvironmentProps type="fence" gardenSize={65} />
+          <EnvironmentProps type="fence" gardenSize={GARDEN_SIZE} />
         </>
       )}
       
