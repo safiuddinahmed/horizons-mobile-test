@@ -24,6 +24,7 @@ export function Sky({
     <>
       <SkyDome topColor={topColor} bottomColor={bottomColor} />
       <Clouds count={cloudCount} speed={cloudSpeed} style={style} />
+      <CuteSun />
     </>
   );
 }
@@ -148,7 +149,7 @@ function Cloud({
   const texture = useMemo(() => createCloudTexture(style), [style]);
   
   return (
-    <sprite position={position} scale={[15 * scale, 8 * scale, 1]}>
+    <sprite position={position} scale={[20 * scale, 10 * scale, 1]}>
       <spriteMaterial
         map={texture}
         transparent
@@ -161,7 +162,7 @@ function Cloud({
 }
 
 /**
- * Create procedural cloud texture
+ * Create procedural cloud texture with cute kawaii face
  */
 function createCloudTexture(style: 'runescape' | 'modern' | 'peaceful'): THREE.Texture {
   const canvas = document.createElement('canvas');
@@ -189,6 +190,9 @@ function createCloudTexture(style: 'runescape' | 'modern' | 'peaceful'): THREE.T
   
   // Top layer (main)
   drawCloudLayer(ctx, 128, 64, 1.0, colors.main);
+  
+  // Add cute kawaii face!
+  drawKawaiiFace(ctx, 128, 64);
   
   // Create texture
   const texture = new THREE.CanvasTexture(canvas);
@@ -234,5 +238,145 @@ function drawCloudLayer(
   });
   
   ctx.globalAlpha = 1.0;
+}
+
+/**
+ * Draw cute kawaii face on cloud
+ */
+function drawKawaiiFace(
+  ctx: CanvasRenderingContext2D,
+  centerX: number,
+  centerY: number
+) {
+  ctx.globalAlpha = 1.0;
+  
+  // Eyes - kawaii style with highlights
+  const eyeY = centerY - 5;
+  const eyeSpacing = 20;
+  
+  // Left eye
+  ctx.fillStyle = '#000000';
+  ctx.beginPath();
+  ctx.arc(centerX - eyeSpacing, eyeY, 8, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Left eye highlight
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.arc(centerX - eyeSpacing + 3, eyeY - 3, 3, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Right eye
+  ctx.fillStyle = '#000000';
+  ctx.beginPath();
+  ctx.arc(centerX + eyeSpacing, eyeY, 8, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Right eye highlight
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.arc(centerX + eyeSpacing + 3, eyeY - 3, 3, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Blush - pink cheeks
+  ctx.fillStyle = '#FFB6C1';
+  ctx.globalAlpha = 0.6;
+  
+  // Left blush
+  ctx.beginPath();
+  ctx.ellipse(centerX - 35, centerY + 5, 8, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Right blush
+  ctx.beginPath();
+  ctx.ellipse(centerX + 35, centerY + 5, 8, 6, 0, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Mouth - cute smile
+  ctx.globalAlpha = 1.0;
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY + 8, 12, 0.2, Math.PI - 0.2);
+  ctx.stroke();
+}
+
+/**
+ * Cute Sun - Kawaii sun character with face and rays
+ */
+function CuteSun() {
+  const texture = useMemo(() => createSunTexture(), []);
+  
+  return (
+    <sprite position={[60, 35, 60]} scale={[25, 25, 1]}>
+      <spriteMaterial
+        map={texture}
+        transparent
+        depthWrite={false}
+        fog={false}
+      />
+    </sprite>
+  );
+}
+
+/**
+ * Create cute sun texture with kawaii face and rays
+ */
+function createSunTexture(): THREE.Texture {
+  const canvas = document.createElement('canvas');
+  canvas.width = 256;
+  canvas.height = 256;
+  const ctx = canvas.getContext('2d')!;
+  
+  const centerX = 128;
+  const centerY = 128;
+  const sunRadius = 60;
+  
+  // Clear canvas
+  ctx.clearRect(0, 0, 256, 256);
+  
+  // Draw sun rays (triangular)
+  ctx.fillStyle = '#FFA500'; // Orange rays
+  const rayCount = 12;
+  const rayLength = 35;
+  const rayWidth = 15;
+  
+  for (let i = 0; i < rayCount; i++) {
+    const angle = (i / rayCount) * Math.PI * 2;
+    const x1 = centerX + Math.cos(angle) * sunRadius;
+    const y1 = centerY + Math.sin(angle) * sunRadius;
+    const x2 = centerX + Math.cos(angle) * (sunRadius + rayLength);
+    const y2 = centerY + Math.sin(angle) * (sunRadius + rayLength);
+    
+    const perpAngle = angle + Math.PI / 2;
+    const dx = Math.cos(perpAngle) * rayWidth;
+    const dy = Math.sin(perpAngle) * rayWidth;
+    
+    ctx.beginPath();
+    ctx.moveTo(x1 + dx, y1 + dy);
+    ctx.lineTo(x1 - dx, y1 - dy);
+    ctx.lineTo(x2, y2);
+    ctx.closePath();
+    ctx.fill();
+  }
+  
+  // Draw sun body (bright yellow circle)
+  const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, sunRadius);
+  gradient.addColorStop(0, '#FFEB3B'); // Bright yellow center
+  gradient.addColorStop(1, '#FFD700'); // Golden edge
+  
+  ctx.fillStyle = gradient;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, sunRadius, 0, Math.PI * 2);
+  ctx.fill();
+  
+  // Add cute kawaii face to sun!
+  drawKawaiiFace(ctx, centerX, centerY);
+  
+  // Create texture
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.needsUpdate = true;
+  
+  return texture;
 }
 
