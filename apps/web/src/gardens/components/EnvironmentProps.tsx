@@ -207,6 +207,7 @@ export function EnvironmentProps({
           position={position}
           rotation={rotations[i]}
           scale={scales[i]}
+          type={type}
         />
       ))}
     </group>
@@ -220,14 +221,39 @@ function Prop({
   scene, 
   position, 
   rotation, 
-  scale 
+  scale,
+  type
 }: { 
   scene: THREE.Group;
   position: [number, number, number]; 
   rotation: number;
   scale: number | [number, number, number];
+  type: string;
 }) {
-  const clonedScene = useMemo(() => scene.clone(), [scene]);
+  const clonedScene = useMemo(() => {
+    const clone = scene.clone();
+    
+    // For fence, lighten ALL materials proportionally (60% brighter!)
+    if (type === 'fence') {
+      clone.traverse((child: any) => {
+        if (child.isMesh && child.material) {
+          // Handle both single materials and material arrays
+          const materials = Array.isArray(child.material) 
+            ? child.material 
+            : [child.material];
+          
+          materials.forEach((mat: any) => {
+            const material = mat.clone();
+            // Brighten by 60% - even lighter than before
+            material.color.multiplyScalar(1.6);
+            child.material = material;
+          });
+        }
+      });
+    }
+    
+    return clone;
+  }, [scene, type]);
   
   return (
     <primitive 
