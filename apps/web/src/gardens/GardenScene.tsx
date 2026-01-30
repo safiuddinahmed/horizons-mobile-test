@@ -41,6 +41,11 @@ export function GardenScene({ config, children }: GardenSceneProps) {
   // SINGLE SOURCE OF TRUTH - Change this one number to resize the entire garden!
   const GARDEN_SIZE = 60;
   
+  // Terrain size offset - expands terrain to fill gap caused by edge falloff
+  // Adjust this to close the gap between terrain and fence (try 2-5)
+  const TERRAIN_SIZE_OFFSET = 5; // Increase to expand terrain, decrease to shrink
+  const TERRAIN_SIZE = GARDEN_SIZE + TERRAIN_SIZE_OFFSET;
+  
   return (
     <group>
       {/* Sky - gradient background */}
@@ -105,10 +110,10 @@ export function GardenScene({ config, children }: GardenSceneProps) {
       {/* Render terrain or traditional ground based on garden */}
       {usesTerrain ? (
         <>
-          {/* New terrain system with rolling hills */}
-          <BaseGroundLayer size={GARDEN_SIZE} color={config.colors.ground} />
+          {/* New terrain system with rolling hills - uses TERRAIN_SIZE to fill gap */}
+          <BaseGroundLayer size={TERRAIN_SIZE} color={config.colors.ground} />
           <TerrainGround
-            size={GARDEN_SIZE}
+            size={TERRAIN_SIZE}
             resolution={150}
             seed={42}
             amplitude={0.9}
@@ -118,7 +123,7 @@ export function GardenScene({ config, children }: GardenSceneProps) {
       ) : (
         <>
           {/* Traditional flat ground */}
-          <Ground color={config.colors.ground} size={GARDEN_SIZE} />
+          <Ground color={config.colors.ground} size={TERRAIN_SIZE} />
           <GrassField 
             color={config.colors.primary} 
             density={grassDensity}
