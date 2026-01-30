@@ -5,6 +5,8 @@ import { GrassField } from './components/GrassField';
 import { SeasonalTrees } from './components/SeasonalTrees';
 import { EnvironmentProps } from './components/EnvironmentProps';
 import { TerrainGround, BaseGroundLayer } from './components/TerrainGround';
+import { Sky } from './components/Sky';
+import { SkyPresets } from './components/SkyPresets';
 
 interface GardenSceneProps {
   config: GardenConfig;
@@ -16,9 +18,6 @@ interface GardenSceneProps {
  * Renders the 3D environment based on garden configuration
  */
 export function GardenScene({ config, children }: GardenSceneProps) {
-  // Parse sky gradient colors
-  const [_skyTop, skyBottom] = config.colors.sky;
-  
   // Check if this garden uses the new terrain system
   const usesTerrain = config.key === 'test_garden';
   
@@ -39,17 +38,27 @@ export function GardenScene({ config, children }: GardenSceneProps) {
   }, [config.key]);
   
   // SINGLE SOURCE OF TRUTH - Change this one number to resize the entire garden!
-  const GARDEN_SIZE = 60;
+  const GARDEN_SIZE = 50;
   
   // Terrain size offset - expands terrain to fill gap caused by edge falloff
   // Adjust this to close the gap between terrain and fence (try 2-5)
   const TERRAIN_SIZE_OFFSET = 5; // Increase to expand terrain, decrease to shrink
   const TERRAIN_SIZE = GARDEN_SIZE + TERRAIN_SIZE_OFFSET;
   
+  // Select sky configuration based on garden
+  const skyConfig = useMemo(() => {
+    if (config.key === 'test_garden') return SkyPresets.clearDay;
+    if (config.key === 'quiet_garden') return SkyPresets.peacefulMorning;
+    if (config.key === 'spring_meadow') return SkyPresets.brightNoon;
+    if (config.key === 'autumn_grove') return SkyPresets.softEvening;
+    if (config.key === 'winter_wonderland') return SkyPresets.winterDay;
+    return SkyPresets.clearDay;
+  }, [config.key]);
+  
   return (
     <group>
-      {/* Sky - gradient background */}
-      <color attach="background" args={[skyBottom]} />
+      {/* Sky with clouds - replaces flat background color */}
+      <Sky {...skyConfig} />
       
       {/* PLA-style lighting - natural, soft atmosphere */}
       {usesTerrain ? (

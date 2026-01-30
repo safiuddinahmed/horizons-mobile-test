@@ -236,7 +236,7 @@ function Prop({
   const clonedScene = useMemo(() => {
     const clone = scene.clone();
     
-    // For fence, lighten ALL materials proportionally (60% brighter!)
+    // For fence, lighten ALL materials proportionally (3x lighter!)
     if (type === 'fence') {
       clone.traverse((child: any) => {
         if (child.isMesh && child.material) {
@@ -247,8 +247,8 @@ function Prop({
           
           materials.forEach((mat: any) => {
             const material = mat.clone();
-            // Brighten by 60% - even lighter than before
-            material.color.multiplyScalar(1.6);
+            // Brighten by 3x - much lighter!
+            material.color.multiplyScalar(5.0);
             child.material = material;
           });
         }
